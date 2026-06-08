@@ -38,7 +38,7 @@ const communities = reactive<Community[]>([
   {
     id: 1,
     name: 'General',
-    description: 'Allgemeine Diskussionen für alle',
+    description: 'Open discussions for everyone',
     emoji: '💬',
     showForm: false,
     newPostTitle: '',
@@ -47,12 +47,12 @@ const communities = reactive<Community[]>([
       {
         id: 1,
         author: 'Athena',
-        title: 'Willkommen in Athenas Playground!',
-        content: 'Schön, dass ihr alle hier seid. Dies ist ein Ort zum Lernen, Teilen und Wachsen. Fühlt euch frei, eure Gedanken zu teilen!',
+        title: "Welcome to Athena's Playground!",
+        content: "So glad you're all here. This is a place to learn, share, and grow. Feel free to share your thoughts!",
         likes: 12,
         liked: false,
         comments: [
-          { id: 11, author: 'Luna', text: 'Super, freue mich schon!', timestamp: new Date('2026-06-07') },
+          { id: 11, author: 'Luna', text: 'Excited to be here!', timestamp: new Date('2026-06-07') },
         ],
         showComments: false,
         newComment: '',
@@ -63,7 +63,7 @@ const communities = reactive<Community[]>([
   {
     id: 2,
     name: 'Design Thinking',
-    description: 'Kreative Problemlösung und Designprozesse',
+    description: 'Creative problem-solving and design processes',
     emoji: '🎨',
     showForm: false,
     newPostTitle: '',
@@ -72,8 +72,8 @@ const communities = reactive<Community[]>([
       {
         id: 2,
         author: 'Maya',
-        title: 'Empathie im Designprozess',
-        content: 'Empathie-Mapping ist eines meiner liebsten Tools. Hat jemand Erfahrungen damit gesammelt und möchte sie teilen?',
+        title: 'Empathy in the design process',
+        content: 'Empathy mapping is one of my favourite tools. Has anyone tried it and wants to share their experience?',
         likes: 8,
         liked: false,
         comments: [],
@@ -86,7 +86,7 @@ const communities = reactive<Community[]>([
   {
     id: 3,
     name: 'Tech & Tools',
-    description: 'Technologie, Werkzeuge und digitale Ressourcen',
+    description: 'Technology, tools, and digital resources',
     emoji: '🛠️',
     showForm: false,
     newPostTitle: '',
@@ -95,8 +95,8 @@ const communities = reactive<Community[]>([
       {
         id: 3,
         author: 'Kai',
-        title: 'Figma vs. andere Prototyping-Tools',
-        content: 'Ich bin ein großer Figma-Fan — habt ihr andere Tools, die ihr empfehlen würdet?',
+        title: 'Figma vs. other prototyping tools',
+        content: "I'm a big Figma fan — are there other tools you'd recommend?",
         likes: 5,
         liked: false,
         comments: [],
@@ -109,7 +109,7 @@ const communities = reactive<Community[]>([
   {
     id: 4,
     name: 'Inspiration',
-    description: 'Teile Inspirationen, Ressourcen und Ideen',
+    description: 'Share inspirations, resources, and ideas',
     emoji: '✨',
     showForm: false,
     newPostTitle: '',
@@ -122,7 +122,7 @@ function addPost(community: Community) {
   if (!community.newPostTitle.trim() || !community.newPostContent.trim()) return
   community.posts.unshift({
     id: nextId.value++,
-    author: 'Du',
+    author: 'You',
     title: community.newPostTitle,
     content: community.newPostContent,
     likes: 0,
@@ -146,7 +146,7 @@ function addComment(post: Post) {
   if (!post.newComment.trim()) return
   post.comments.push({
     id: nextId.value++,
-    author: 'Du',
+    author: 'You',
     text: post.newComment,
     timestamp: new Date(),
   })
@@ -154,14 +154,14 @@ function addComment(post: Post) {
 }
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 </script>
 
 <template>
   <section id="forum-header">
     <h1>Community Forum</h1>
-    <p>Tausch dich aus, stell Fragen und teile deine Ideen.</p>
+    <p>Exchange ideas, ask questions, and share what you know.</p>
   </section>
 
   <div class="ticks"></div>
@@ -184,7 +184,7 @@ function formatDate(date: Date): string {
           class="btn-new"
           @click="community.showForm = !community.showForm"
         >
-          {{ community.showForm ? '✕ Abbrechen' : '+ Neuer Post' }}
+          {{ community.showForm ? '✕ Cancel' : '+ New Post' }}
         </button>
       </div>
 
@@ -196,22 +196,22 @@ function formatDate(date: Date): string {
         <input
           v-model="community.newPostTitle"
           class="form-input"
-          placeholder="Titel deines Posts…"
+          placeholder="Post title…"
           maxlength="120"
           required
         />
         <textarea
           v-model="community.newPostContent"
           class="form-textarea"
-          placeholder="Was möchtest du mitteilen?"
+          placeholder="What's on your mind?"
           rows="3"
           required
         />
-        <button type="submit" class="btn-submit">Veröffentlichen</button>
+        <button type="submit" class="btn-submit">Publish</button>
       </form>
 
       <div v-if="community.posts.length === 0 && !community.showForm" class="empty-state">
-        Noch keine Posts — sei die Erste!
+        No posts yet — be the first!
       </div>
 
       <ul class="post-list">
@@ -232,7 +232,7 @@ function formatDate(date: Date): string {
               class="action-btn"
               :class="{ liked: post.liked }"
               @click="toggleLike(post)"
-              :aria-label="`${post.likes} Likes`"
+              :aria-label="`${post.likes} likes`"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -243,19 +243,19 @@ function formatDate(date: Date): string {
             <button
               class="action-btn"
               @click="post.showComments = !post.showComments"
-              :aria-label="`${post.comments.length} Kommentare`"
+              :aria-label="`${post.comments.length} comments`"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
               {{ post.comments.length }}
-              {{ post.showComments ? 'ausblenden' : 'Kommentare' }}
+              {{ post.showComments ? 'hide' : 'comments' }}
             </button>
           </div>
 
           <div v-if="post.showComments" class="comments-section">
             <div v-if="post.comments.length === 0" class="comments-empty">
-              Noch keine Kommentare.
+              No comments yet.
             </div>
             <ul class="comment-list">
               <li v-for="comment in post.comments" :key="comment.id" class="comment">
@@ -272,10 +272,10 @@ function formatDate(date: Date): string {
               <input
                 v-model="post.newComment"
                 class="form-input"
-                placeholder="Kommentar schreiben…"
+                placeholder="Write a comment…"
                 maxlength="500"
               />
-              <button type="submit" class="btn-submit btn-sm">Senden</button>
+              <button type="submit" class="btn-submit btn-sm">Send</button>
             </form>
           </div>
         </li>
