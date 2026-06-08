@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import CommunityForum from './components/CommunityForum.vue'
 </script>
 
 <template>
-  <HelloWorld />
+  <CommunityForum />
 </template>
