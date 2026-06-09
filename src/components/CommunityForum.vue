@@ -39,6 +39,7 @@ interface XpToast {
   id: number
   amount: number
   reason: string
+  celebrate?: boolean
 }
 
 // ── Level thresholds ──────────────────────────────────────────────
@@ -55,6 +56,25 @@ const LEVELS = [
 const XP_POST    = 30
 const XP_IMAGE   = 10
 const XP_COMMENT = 10
+
+// ── Encouraging messages shown when a user shares something ───────
+const POST_CHEERS = [
+  '🎉 Awesome, thanks for sharing!',
+  '✨ Great post — the community will love this!',
+  '🙌 Way to go! Your voice matters here.',
+  '🌟 Nicely done! Keep the ideas coming.',
+  '💜 Thank you for contributing!',
+  '🚀 Love it — you just made the forum better!',
+]
+const COMMENT_CHEERS = [
+  '💬 Thanks for joining the conversation!',
+  '🙌 Great input!',
+  '✨ Nice one — keep it up!',
+  '💜 Love seeing you engage!',
+]
+function pickCheer(list: string[]): string {
+  return list[Math.floor(Math.random() * list.length)]
+}
 
 // ── Profile ───────────────────────────────────────────────────────
 const profile = reactive({ name: 'You', xp: 0, postsCount: 0, commentsCount: 0 })
@@ -74,11 +94,11 @@ const levelInfo = computed(() => {
 const toasts = ref<XpToast[]>([])
 let toastId = 0
 
-function awardXp(amount: number, reason: string) {
+function awardXp(amount: number, reason: string, celebrate = false) {
   profile.xp += amount
   const id = toastId++
-  toasts.value.push({ id, amount, reason })
-  setTimeout(() => { toasts.value = toasts.value.filter(t => t.id !== id) }, 2200)
+  toasts.value.push({ id, amount, reason, celebrate })
+  setTimeout(() => { toasts.value = toasts.value.filter(t => t.id !== id) }, celebrate ? 3200 : 2200)
 }
 
 // ── Data ──────────────────────────────────────────────────────────
@@ -150,7 +170,7 @@ function addPost(community: Community) {
   community.newPostImage = null
   community.showForm = false
   profile.postsCount++
-  awardXp(XP_POST + (hasImage ? XP_IMAGE : 0), hasImage ? 'Post with image' : 'New post')
+  awardXp(XP_POST + (hasImage ? XP_IMAGE : 0), pickCheer(POST_CHEERS), true)
 }
 
 function toggleLike(post: Post) {
@@ -166,7 +186,7 @@ function addComment(post: Post) {
   })
   post.newComment = ''
   profile.commentsCount++
-  awardXp(XP_COMMENT, 'Comment')
+  awardXp(XP_COMMENT, pickCheer(COMMENT_CHEERS), true)
 }
 
 function formatDate(date: Date): string {
@@ -179,9 +199,10 @@ function formatDate(date: Date): string {
   <Teleport to="body">
     <div class="toast-stack">
       <TransitionGroup name="toast">
-        <div v-for="toast in toasts" :key="toast.id" class="xp-toast">
+        <div v-for="toast in toasts" :key="toast.id" class="xp-toast" :class="{ celebrate: toast.celebrate }">
+          <span v-if="toast.celebrate" class="xp-toast-cheer">{{ toast.reason }}</span>
           <span class="xp-toast-amount">+{{ toast.amount }} XP</span>
-          <span class="xp-toast-reason">{{ toast.reason }}</span>
+          <span v-if="!toast.celebrate" class="xp-toast-reason">{{ toast.reason }}</span>
         </div>
       </TransitionGroup>
     </div>
@@ -543,6 +564,27 @@ function formatDate(date: Date): string {
 .xp-toast-reason {
   opacity: 0.85;
   font-size: 13px;
+}
+
+/* ── Celebration toast (shown when sharing a post/comment) ─────── */
+.xp-toast.celebrate {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, #ff4db8));
+  box-shadow: 0 6px 26px rgba(0,0,0,0.28);
+}
+
+.xp-toast-cheer {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.xp-toast.celebrate .xp-toast-amount {
+  font-size: 13px;
+  opacity: 0.9;
 }
 
 .toast-enter-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
