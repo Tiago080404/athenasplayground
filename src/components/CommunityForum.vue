@@ -14,6 +14,7 @@ interface Post {
   title: string
   content: string
   image: string | null
+  video: string | null
   likes: number
   liked: boolean
   comments: Comment[]
@@ -31,8 +32,10 @@ interface Community {
   newPostTitle: string
   newPostContent: string
   newPostImage: string | null
+  newPostVideo: string | null
   showForm: boolean
   _fileInput?: HTMLInputElement | null
+  _videoInput?: HTMLInputElement | null
 }
 
 interface XpToast {
@@ -55,6 +58,7 @@ const LEVELS = [
 
 const XP_POST    = 30
 const XP_IMAGE   = 10
+const XP_VIDEO   = 15
 const XP_COMMENT = 10
 
 // ── Encouraging messages shown when a user shares something ───────
@@ -107,38 +111,38 @@ const nextId = ref(200)
 const communities = reactive<Community[]>([
   {
     id: 1, name: 'General', description: 'Open discussions for everyone', emoji: '💬',
-    showForm: false, newPostTitle: '', newPostContent: '', newPostImage: null,
+    showForm: false, newPostTitle: '', newPostContent: '', newPostImage: null, newPostVideo: null,
     posts: [{
       id: 1, author: 'Athena', title: "Welcome to Athena's Playground!",
       content: "So glad you're all here. This is a place to learn, share, and grow. Feel free to share your thoughts!",
-      image: null, likes: 12, liked: false,
+      image: null, video: null, likes: 12, liked: false,
       comments: [{ id: 11, author: 'Luna', text: 'Excited to be here!', timestamp: new Date('2026-06-07') }],
       showComments: false, newComment: '', timestamp: new Date('2026-06-01'),
     }],
   },
   {
     id: 2, name: 'Design Thinking', description: 'Creative problem-solving and design processes', emoji: '🎨',
-    showForm: false, newPostTitle: '', newPostContent: '', newPostImage: null,
+    showForm: false, newPostTitle: '', newPostContent: '', newPostImage: null, newPostVideo: null,
     posts: [{
       id: 2, author: 'Maya', title: 'Empathy in the design process',
       content: 'Empathy mapping is one of my favourite tools. Has anyone tried it and wants to share their experience?',
-      image: null, likes: 8, liked: false, comments: [],
+      image: null, video: null, likes: 8, liked: false, comments: [],
       showComments: false, newComment: '', timestamp: new Date('2026-06-05'),
     }],
   },
   {
     id: 3, name: 'Tech & Tools', description: 'Technology, tools, and digital resources', emoji: '🛠️',
-    showForm: false, newPostTitle: '', newPostContent: '', newPostImage: null,
+    showForm: false, newPostTitle: '', newPostContent: '', newPostImage: null, newPostVideo: null,
     posts: [{
       id: 3, author: 'Kai', title: 'Figma vs. other prototyping tools',
       content: "I'm a big Figma fan — are there other tools you'd recommend?",
-      image: null, likes: 5, liked: false, comments: [],
+      image: null, video: null, likes: 5, liked: false, comments: [],
       showComments: false, newComment: '', timestamp: new Date('2026-06-06'),
     }],
   },
   {
     id: 4, name: 'Inspiration', description: 'Share inspirations, resources, and ideas', emoji: '✨',
-    showForm: false, newPostTitle: '', newPostContent: '', newPostImage: null, posts: [],
+    showForm: false, newPostTitle: '', newPostContent: '', newPostImage: null, newPostVideo: null, posts: [],
   },
 ])
 
@@ -156,21 +160,36 @@ function clearImage(community: Community, inputRef: HTMLInputElement | null | un
   if (inputRef) inputRef.value = ''
 }
 
+function handleVideoUpload(community: Community, event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (e) => { community.newPostVideo = e.target?.result as string }
+  reader.readAsDataURL(file)
+}
+
+function clearVideo(community: Community, inputRef: HTMLInputElement | null | undefined) {
+  community.newPostVideo = null
+  if (inputRef) inputRef.value = ''
+}
+
 function addPost(community: Community) {
   if (!community.newPostTitle.trim() || !community.newPostContent.trim()) return
   const hasImage = !!community.newPostImage
+  const hasVideo = !!community.newPostVideo
   community.posts.unshift({
     id: nextId.value++, author: 'You',
     title: community.newPostTitle, content: community.newPostContent,
-    image: community.newPostImage, likes: 0, liked: false,
+    image: community.newPostImage, video: community.newPostVideo, likes: 0, liked: false,
     comments: [], showComments: false, newComment: '', timestamp: new Date(),
   })
   community.newPostTitle = ''
   community.newPostContent = ''
   community.newPostImage = null
+  community.newPostVideo = null
   community.showForm = false
   profile.postsCount++
-  awardXp(XP_POST + (hasImage ? XP_IMAGE : 0), pickCheer(POST_CHEERS), true)
+  awardXp(XP_POST + (hasImage ? XP_IMAGE : 0) + (hasVideo ? XP_VIDEO : 0), pickCheer(POST_CHEERS), true)
 }
 
 function toggleLike(post: Post) {
@@ -248,7 +267,7 @@ function formatDate(date: Date): string {
 
     <!-- XP guide -->
     <div class="xp-guide">
-      <span>Earn XP: <strong>+{{ XP_POST }} post</strong> · <strong>+{{ XP_IMAGE }} with image</strong> · <strong>+{{ XP_COMMENT }} comment</strong></span>
+      <span>Earn XP: <strong>+{{ XP_POST }} post</strong> · <strong>+{{ XP_IMAGE }} with image</strong> · <strong>+{{ XP_VIDEO }} with video</strong> · <strong>+{{ XP_COMMENT }} comment</strong></span>
     </div>
   </section>
 
@@ -305,9 +324,28 @@ function formatDate(date: Date): string {
           <button type="button" class="image-remove" @click="clearImage(community, community._fileInput)" aria-label="Remove image">✕</button>
         </div>
 
+        <label class="upload-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="5" width="14" height="14" rx="2"/><polygon points="16 9 22 6 22 18 16 15"/>
+          </svg>
+          Add video
+          <input
+            type="file"
+            accept="video/*"
+            class="upload-input"
+            :ref="el => community._videoInput = el as HTMLInputElement"
+            @change="handleVideoUpload(community, $event)"
+          />
+        </label>
+
+        <div v-if="community.newPostVideo" class="image-preview-wrap">
+          <video :src="community.newPostVideo" class="video-preview" controls />
+          <button type="button" class="image-remove" @click="clearVideo(community, community._videoInput)" aria-label="Remove video">✕</button>
+        </div>
+
         <div class="form-footer">
           <span class="xp-hint">
-            +{{ XP_POST + (community.newPostImage ? XP_IMAGE : 0) }} XP for this post
+            +{{ XP_POST + (community.newPostImage ? XP_IMAGE : 0) + (community.newPostVideo ? XP_VIDEO : 0) }} XP for this post
           </span>
           <button type="submit" class="btn-submit">Publish</button>
         </div>
@@ -329,6 +367,7 @@ function formatDate(date: Date): string {
           <p class="post-content">{{ post.content }}</p>
 
           <img v-if="post.image" :src="post.image" class="post-image" alt="" />
+          <video v-if="post.video" :src="post.video" class="post-video" controls />
 
           <div class="post-actions">
             <button
@@ -780,6 +819,15 @@ function formatDate(date: Date): string {
   object-fit: cover;
 }
 
+.video-preview {
+  display: block;
+  max-height: 200px;
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #000;
+}
+
 .image-remove {
   position: absolute;
   top: 6px;
@@ -888,6 +936,16 @@ function formatDate(date: Date): string {
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.post-video {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #000;
   margin-bottom: 14px;
 }
 
